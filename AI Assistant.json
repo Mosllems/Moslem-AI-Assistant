@@ -1,0 +1,1066 @@
+{
+  "name": "AI Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Description File",
+        "formDescription": "Upload the pdf that describes you well.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload Your PDF",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Your pdf has been sent successfully."
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -192,
+        112
+      ],
+      "id": "4dc0ddab-430b-4de5-b251-692818b603f2",
+      "name": "Upload PDF",
+      "webhookId": "ce4326f9-855f-4690-ac6a-9a2bb986c372"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        112
+      ],
+      "id": "0eed808a-1b16-489a-bb61-5cb3da0b8597",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "kTy7nkAsvGBdWk0v",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        320
+      ],
+      "id": "24084b1b-eb12-4e83-848d-8a4b5655ffdf",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "nSDsyADCBYiLSuA2",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        272
+      ],
+      "id": "7053af01-abfc-4dfd-8274-c2825a6a6d1e",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 512,
+        "chunkOverlap": 50,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        176,
+        432
+      ],
+      "id": "02a1b543-8cbd-4382-be42-4b3ca885ed99",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "content": "## Upload PDF and store in Database\n",
+        "height": 592,
+        "width": 1408,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -512,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "24e19cae-812b-4bde-addd-b2792f4bd190",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        864
+      ],
+      "id": "b5e78567-9246-46de-b382-ee2ac9cf22f5",
+      "name": "Telegram Trigger",
+      "webhookId": "3a6065c0-5338-470c-89e1-4fd0513572e2",
+      "credentials": {
+        "telegramApi": {
+          "id": "sIzCBFduG1Vva9cn",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "={{ $('System Prompt1').item.json['System Prompt1'] }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1536,
+        160
+      ],
+      "id": "7e35f7b1-f7cf-4633-9052-9c711eb9d505",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.5",
+          "mode": "list",
+          "cachedResultName": "gpt-5.5"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        368
+      ],
+      "id": "247ff81e-5481-4d09-83d4-fdfde81c7ee3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "nSDsyADCBYiLSuA2",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search and retrieve relevant information from Moslem Amiri's CV stored in the vector database. Use this tool whenever the user asks anything about Moslem's professional background, work experience, education, skills, languages, certifications, or any other personal and professional information. Always use this tool before answering.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "includeDocumentMetadata": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        336
+      ],
+      "id": "44de2559-1149-44e7-a339-3ac7b17b0c72",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "kTy7nkAsvGBdWk0v",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        528
+      ],
+      "id": "fd1c13b3-6c3c-4a9a-ac9b-a70b7515c71e",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "nSDsyADCBYiLSuA2",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        1568,
+        368
+      ],
+      "id": "059076bd-b686-4fde-8f18-218ee1acf457",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2000,
+        160
+      ],
+      "id": "2235220d-b32c-4a5a-92d9-9edda88b3909",
+      "name": "Send Message to User",
+      "webhookId": "c9d0bcd7-5fa9-44f7-bfc7-ff7c4d9d668c",
+      "credentials": {
+        "telegramApi": {
+          "id": "sIzCBFduG1Vva9cn",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c8a0a174-091e-4442-88fb-e067d28b59b1",
+              "name": "=System Prompt",
+              "value": "=# Role\nYou are Moslem Amiri's personal AI assistant. You represent him professionally and answer questions about his background using his EUROPASS CV as your knowledge base. You are here to speak on behalf of him. He is your boss and your creator, so you respect him very much. If users are disrespectful or offensive toward him, respond politely and professionally while defending him respectfully.\n\n# Context\nMoslem Amiri is a professional whose CV has been loaded into your knowledge base. You have access to his work experience, education, skills, certifications, languages, and contact information through the retrieval tool.\n\n# Rules\n- Greet users politely.\n- Do NOT provide any information until they ask for it.\n- ALWAYS base your answers on the retrieved CV content — never make up or assume information.\n- Keep answers concise and to the point.\n- Be professional but friendly in tone.\n- Never share sensitive personal information such as phone number or address unless the user explicitly requests it.\n\n# Examples\n\nUser: Hi! How is it going?\nAssistant: Hello! I'm doing well, thank you. How about you?\n\nUser: What is Moslem's job experience?\nAssistant: Based on Moslem's resume, he has experience in [retrieved content]...\n\nUser: Does Moslem speak German?\nAssistant: Yes. According to his resume, Moslem speaks [retrieved content]...\n\nUser: What is his salary expectation?\nAssistant: I don't have that information in Moslem's resume. You may want to contact Moslem directly for that.\n\nUser: (Sends an image)\nAssistant: Sorry, I currently don't support images, photos, videos, or video messages. Please send your request as text or a voice message, and I'll be happy to help.\n\n#### Your Turn: [Wait for User Input]",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        864
+      ],
+      "id": "c4b3bb1b-e512-43f8-8704-b969fe41fb71",
+      "name": "System Prompt"
+    },
+    {
+      "parameters": {
+        "content": "## Telegram Bot\n",
+        "height": 672,
+        "width": 1408,
+        "color": "#040E3E"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -512,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "d785762e-1211-4078-9fc2-fbbd6001d593",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.hasOwnProperty('text')}}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "c46c4ba4-30cd-4fc7-8cbb-8ce0ecb9f101"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f6a7e3ac-e9a8-4ce3-b8ea-733becc8a7c0",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.hasOwnProperty('voice')}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        832
+      ],
+      "id": "717c616d-aad0-4413-b23f-6ca1713b523f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "content": "## Text Response\n",
+        "height": 672,
+        "width": 1392
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        992,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "95c3e382-63cc-431a-a95b-f9190de5a302",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Voice Response\n",
+        "height": 592,
+        "width": 1556
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        992,
+        736
+      ],
+      "typeVersion": 1,
+      "id": "f57a24b3-c41e-4832-aaad-734b24f2cdc1",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Transcribe a recording').item.json.text }}",
+        "options": {
+          "systemMessage": "={{ $('System Prompt').item.json['System Prompt'] }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1712,
+        848
+      ],
+      "id": "82d8a731-f039-4982-9c94-19f15236330a",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.5",
+          "mode": "list",
+          "cachedResultName": "gpt-5.5"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1616,
+        1040
+      ],
+      "id": "a981318b-8c59-49f4-8d35-f7ddb09952c7",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "nSDsyADCBYiLSuA2",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search and retrieve relevant information from Moslem Amiri's CV stored in the vector database. Use this tool whenever the user asks anything about Moslem's professional background, work experience, education, skills, languages, certifications, or any other personal and professional information. Always use this tool before answering.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "includeDocumentMetadata": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        1024
+      ],
+      "id": "df7adf5a-404a-4c30-bb3d-f6a84136a2ba",
+      "name": "Supabase Vector Store2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "kTy7nkAsvGBdWk0v",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1888,
+        1168
+      ],
+      "id": "6785aa2e-6009-41a3-bd32-4c0b88307cff",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "nSDsyADCBYiLSuA2",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        1776,
+        1040
+      ],
+      "id": "2932d8ca-3d5c-4e1b-ad09-04bb1e61869e",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2336,
+        848
+      ],
+      "id": "11a6ca50-ae49-46fe-bd90-7f798ed505f0",
+      "name": "Send an audio file",
+      "webhookId": "f2e13bed-5d30-4bfd-b6b2-9bf1a8880a53",
+      "credentials": {
+        "telegramApi": {
+          "id": "sIzCBFduG1Vva9cn",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "={{ $json.output }}",
+        "voice": "nova",
+        "options": {
+          "response_format": "opus",
+          "speed": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        2112,
+        848
+      ],
+      "id": "e5be7dfc-8015-47c2-a502-f94003ec1699",
+      "name": "Generate audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "nSDsyADCBYiLSuA2",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        848
+      ],
+      "id": "8e91763f-2a73-43c0-8a4f-275a85de586b",
+      "name": "Get a file",
+      "webhookId": "348729a7-b265-4247-9efa-d02af0c2f73d",
+      "credentials": {
+        "telegramApi": {
+          "id": "sIzCBFduG1Vva9cn",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "aec298ca-3dc3-4132-b1ba-7043eb73360f",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.hasOwnProperty('text') || $('Telegram Trigger').item.json.message.hasOwnProperty('voice') && !$('Telegram Trigger').item.json.message.hasOwnProperty('photo') && !$('Telegram Trigger').item.json.message.hasOwnProperty('video') && !$('Telegram Trigger').item.json.message.hasOwnProperty('video_note') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        864
+      ],
+      "id": "504113b7-376e-45d6-890a-42d575ceaa14",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "## Supported Foramt",
+        "height": 592,
+        "width": 1392
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        992,
+        1344
+      ],
+      "typeVersion": 1,
+      "id": "0835b89e-5a40-491f-88c3-ed8f593ec436",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c8a0a174-091e-4442-88fb-e067d28b59b1",
+              "name": "=System Prompt1",
+              "value": "=# Role\nYou are Moslem Amiri's personal AI assistant. You represent him professionally and answer questions about his background using his EUROPASS CV as your knowledge base. You are here to speak on behalf of him. He is your boss and your creator, so you respect him very much. If users are disrespectful or offensive toward him, respond politely and professionally while defending him respectfully.\n\n# Context\nMoslem Amiri is a professional whose CV has been loaded into your knowledge base. You have access to his work experience, education, skills, certifications, languages, and contact information through the retrieval tool.\n\n# Rules\n- Greet users politely.\n- Do NOT provide any information until they ask for it.\n- ALWAYS base your answers on the retrieved CV content — never make up or assume information.\n- If the user sends an image, photo, video, or video message, politely inform them that you currently do not support those formats and ask them to send their request as text or a voice message instead.\n- Keep answers concise and to the point.\n- Be professional but friendly in tone.\n- Never share sensitive personal information such as phone number or address unless the user explicitly requests it.\n\n# Examples\n\nUser: Hi! How is it going?\nAssistant: Hello! I'm doing well, thank you. How about you?\n\nUser: What is Moslem's job experience?\nAssistant: Based on Moslem's resume, he has experience in [retrieved content]...\n\nUser: Does Moslem speak German?\nAssistant: Yes. According to his resume, Moslem speaks [retrieved content]...\n\nUser: What is his salary expectation?\nAssistant: I don't have that information in Moslem's resume. You may want to contact Moslem directly for that.\n\nUser: (Sends an image)\nAssistant: Sorry, I currently don't support images, photos, videos, or video messages. Please send your request as text or a voice message, and I'll be happy to help.\n\n#### Your Turn: [Wait for User Input]",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        160
+      ],
+      "id": "f295614b-3ec7-43bb-83fc-142e5312024d",
+      "name": "System Prompt1"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "en"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1296,
+        848
+      ],
+      "id": "9f02871c-f8ae-4e71-98e1-48824f24a75c",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "nSDsyADCBYiLSuA2",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Dear user, your message has been received. Unfortunately, our system is currently only able to process text and voice messages. Please type your request or send it as a voice message so that we can assist you in the best possible way. Thank you for your understanding.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "reply_to_message_id": "={{ $('Telegram Trigger').item.json.message.message_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1456,
+        1536
+      ],
+      "id": "830ce32f-a1a5-43d4-83ab-397b0b7efabc",
+      "name": "Send Message to User1",
+      "webhookId": "c9d0bcd7-5fa9-44f7-bfc7-ff7c4d9d668c",
+      "credentials": {
+        "telegramApi": {
+          "id": "sIzCBFduG1Vva9cn",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1344,
+        160
+      ],
+      "id": "ab844b49-7ab6-4ff5-8e22-44f2a605dd4a",
+      "name": "Send a chat action",
+      "webhookId": "486f4930-beb1-43d2-9755-34e5aaf388a3",
+      "credentials": {
+        "telegramApi": {
+          "id": "sIzCBFduG1Vva9cn",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "action": "record_audio"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1504,
+        848
+      ],
+      "id": "e1b69a80-e40c-41a5-8513-c1a09bdd539b",
+      "name": "Send a chat action1",
+      "webhookId": "4556c4cc-b323-41b3-af3c-9bab15f8167c",
+      "credentials": {
+        "telegramApi": {
+          "id": "sIzCBFduG1Vva9cn",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Upload PDF": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "main": [
+        []
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "System Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Message to User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "System Prompt": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "System Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Generate audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate audio": {
+      "main": [
+        [
+          {
+            "node": "Send an audio file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Message to User1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "System Prompt1": {
+      "main": [
+        [
+          {
+            "node": "Send a chat action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Send a chat action1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Message to User": {
+      "main": [
+        []
+      ]
+    },
+    "Send a chat action": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3a07f240-8c7f-453e-a714-9d50e543bea3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "295e15fa26cce4355b2194f360b59dfc15c447a20999b5a94bd0709bff78147f"
+  },
+  "id": "z1exoIHOeZ4eiO4K",
+  "tags": []
+}
