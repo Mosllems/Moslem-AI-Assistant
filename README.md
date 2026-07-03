@@ -1,24 +1,24 @@
-# 🤖 Telegram AI Assistant
+# Telegram AI Assistant
 
 An AI-powered Telegram assistant built with **n8n**, **RAG (Retrieval-Augmented Generation)**, and **Supabase Vector Store**. The assistant answers questions about you by retrieving relevant information from your personal knowledge base and supports both text and voice conversations.
 
-## ✨ Features
+## Features
 
-- 🤖 AI-powered Telegram assistant
-- 🧠 Retrieval-Augmented Generation (RAG)
-- 📄 Upload your personal PDF as a knowledge base
-- ✂️ Automatic document chunking
-- 🗂️ Stores embeddings in **Supabase Vector Store**
-- 💬 Supports text conversations
-- 🎤 Supports voice messages
-- 🌍 Replies in the same language as the user's message
-- ⚡ Built with **n8n** workflows
-- 🔎 Retrieves only the most relevant information from your knowledge base before generating responses
-- 🚫 Does **not** support photos, videos, GIFs, or Telegram video messages
+-  AI-powered Telegram assistant
+-  Retrieval-Augmented Generation (RAG)
+-  Upload your personal PDF as a knowledge base
+-  Automatic document chunking
+-  Stores embeddings in **Supabase Vector Store**
+-  Supports text conversations
+-  Supports voice messages
+-  Replies in the same language as the user's message
+-  Built with **n8n** workflows
+-  Retrieves only the most relevant information from your knowledge base before generating responses
+-  Does **not** support photos, videos, GIFs, or Telegram video messages
 
 ---
 
-## 🚀 How It Works
+##  How It Works
 
 ### 1. Create Your Knowledge Base
 
@@ -37,8 +37,8 @@ The assistant will:
 
 Users can interact with the assistant by sending:
 
-- 💬 Text messages
-- 🎤 Voice messages
+-  Text messages
+-  Voice messages
 
 For each query, the assistant:
 
@@ -49,7 +49,7 @@ For each query, the assistant:
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 - n8n
 - Telegram Bot API
@@ -62,7 +62,7 @@ For each query, the assistant:
 ---
 
 
-## 🤖 Telegram Bot
+##  Telegram Bot
 
 Try it here:
 
